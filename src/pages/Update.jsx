@@ -11,8 +11,36 @@ const Update = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [progress, setProgress] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const redirect = useNavigate();
+  const {goalId} = useParams()
+  const url = `https://goal-on-yummy-brown.onrender.com/api/v1/goals/${goalId}`
+  const getGoal = async () => {
+    const res = await fetch(url)
+    const {goal} = await res.json()
+    setIsLoading(false)
+    setTitle(goal.title)
+    setDescription(goal.description)
+    setProgress(goal.progress)
+  }
+  useEffect(() => {
+    getGoal()
+  }, [goalId])
+  const handleUpdate = async (e) => {
+    e.preventDefault()
+    try {
+      const res = await fetch(url, { method: 'PATCH', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, progress, description})})
+      const data = await res.json()
+      if (data.success) {
+        redirect('/all')
+      } else {
+        toast.error('Error occured while updating, Try again')
+      }
+    } catch(error) {
+      console.log(error);
+    }
+  }
+
 
   return (
     <>
@@ -23,7 +51,7 @@ const Update = () => {
         <div className="container d-flex justify-content-between align-items-center mt-3 pb-3 gap-lg-2">
           <div className="main-form py-5 px-1 ps-lg-2 ps-xl-3 pe-xl-3 rounded-2">
             <ToastContainer />
-            <form className="create-form">
+            <form onSubmit={handleUpdate} className="create-form">
               <div className="mt-2">
                 <input
                   type="text"

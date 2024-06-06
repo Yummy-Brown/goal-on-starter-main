@@ -8,12 +8,42 @@ const Create = () => {
   const redirect = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [clicked, setClicked] = useState(false)
+  const url = 'https://goal-on-yummy-brown.onrender.com/api/v1/goals'
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setClicked(true)
+    if (!title || !description) {
+      toast.error('please fill all fields')
+      setClicked(false)
+      return
+    }
+    try {
+      const res = await fetch (url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({title, description})
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast.success('Goal created successfully')
+        redirect('/all')
+      } else {
+        toast.error('Error creating a goal, Try Again')
+        setClicked(false)
+        setTitle('')
+        setDescription('')
+      }
+    } catch(error) {
+      console.log(error);
+    }
+  }
 
   return (
     <div className="container d-flex justify-content-between align-items-center mt-3 pb-3 gap-lg-2">
       <div className="main-form py-5 px-1 ps-lg-2 ps-xl-3 pe-xl-3 rounded-2">
         <ToastContainer />
-        <form className="create-form">
+        <form onSubmit={handleSubmit} className="create-form">
           <div className="mt-2">
             <input
               type="text"
@@ -36,7 +66,7 @@ const Create = () => {
             ></textarea>
           </div>
           <div className="mt-2">
-            <button className="blue-bg p-2">Create Goal</button>
+            <button className="blue-bg p-2">{clicked ? 'Loading...' : 'Create Goal'}</button>
           </div>
         </form>
       </div>
